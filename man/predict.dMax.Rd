@@ -11,38 +11,49 @@
 Predicted values based on desirability objects
 }
 \usage{
-predict.dMax(object, newdata = NA, ...)
-predict.dMin(object, newdata = NA, ...)
-predict.dTarget(object, newdata = NA, ...)
-predict.dArb(object, newdata = NA, ...)
-predict.dBox(object, newdata = NA, ...)
-predict.dOverall(object, newdata = matrix(NA, ncol = length(object$d)), all = FALSE, ...)
+\method{predict}{dMax}(object, newdata = NA, ...)
+\method{predict}{dMin}(object, newdata = NA, ...)
+\method{predict}{dTarget}(object, newdata = NA, ...)
+\method{predict}{dArb}(object, newdata = NA, ...)
+\method{predict}{dBox}(object, newdata = NA, ...)
+\method{predict}{dOverall}(object, newdata = matrix(NA, ncol = length(object$d)), all = FALSE, ...)
 
 }
 \arguments{
-  \item{object}{ ~~Describe \code{object} here~~ }
-  \item{newdata}{ ~~Describe \code{newdata} here~~ }
-  \item{all}{ ~~Describe \code{newdata} here~~ }
-  \item{\dots}{ ~~Describe \code{\dots} here~~ }
+  \item{object}{a object of class: \code{dMax}, \code{dMin},
+    \code{dTarget}, \code{dArb}, \code{dBox} or \code{dOverall}}
+  \item{newdata}{values of the response for predicting desirability}
+  \item{all}{a logical (for \code{predict.dOverall} only); should the
+    individual desirabilities also be returned?}
+  \item{\dots}{no currently used}
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+The responses are translated into desirability units.
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+a vector, unless \code{predict.dOverall} is used with \code{all=TRUE},
+in which case a matrix is returned.
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
+\references{Derringer, G. and Suich, R. (1980),
+Simultaneous Optimization of Several Response Variables.
+{\em Journal of Quality Technology} {\bf 12}, 214--219.}
+\author{Max Kuhn}
 
- ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{\code{\link{dMax}}}
 \examples{
-dMin(1,3)
+d1 <- dMin(1,3)
+d2 <- dTarget(1, 2, 3)
+dBoth <- dOverall(d1, d2)
+
+outcomes <- cbind(
+   seq(0, 4, length = 10),
+   seq(0.5, 4.5, length = 10))
+   
+  
+predict(d1, outcomes[,2])
+predict(d2, outcomes[,2])
+predict(dBoth, outcomes)
+predict(dBoth, outcomes, all = TRUE)
 }
 \keyword{utilities}
+

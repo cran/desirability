@@ -89,7 +89,7 @@ predict.dOverall <- function(object, newdata = matrix(NA, ncol = length(object$d
    if(all)
    {
       out <- cbind(indD, overall)
-      names(out)[numD + 1] <- "Overall"
+      colnames(out)[numD + 1] <- "Overall"
    
    } else out <- overall
    
