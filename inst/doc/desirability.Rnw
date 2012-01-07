@@ -32,9 +32,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontshape=sl,formatcom=\color{darkblue}} 
+\fvset{listparameters={\setlength{\topsep}{0pt}}}
+\renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+
+\fvset{fontsize=\footnotesize}
+
 \newcommand{\bld}[1]{\mbox{\boldmath $#1$}}
 \newcommand{\shell}[1]{\mbox{$#1$}}
 \renewcommand{\vec}[1]{\mbox{\bf {#1}}}
+
+\newcommand{\code}[1]{\mbox{\footnotesize\color{darkblue}\texttt{#1}}}
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
 
 \newcommand{\ReallySmallSpacing}{\renewcommand{\baselinestretch}{.6}\Large\normalsize}
 \newcommand{\SmallSpacing}{\renewcommand{\baselinestretch}{1.1}\Large\normalsize}
@@ -52,7 +61,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy}
 \lhead{}
-\chead{The \texttt{desirability} Package}
+\chead{The \pkg{desirability} Package}
 \rhead{}
 \lfoot{}
 \cfoot{}
@@ -61,7 +70,7 @@
 \renewcommand{\footrulewidth}{1pt}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\title{The \texttt{desirability} Package}
+\title{The \pkg{desirability} Package}
 \author{Max Kuhn \\ max.kuhn@pfizer.com}
 
 
@@ -73,7 +82,7 @@
       
 \section{Introduction}
 
-The \texttt{desirability} package contains S3 classes for multivariate optimization using the desirability function approach of Harrington (1965) using functional forms described by Derringer and Suich (1980).
+The \pkg{desirability} package contains S3 classes for multivariate optimization using the desirability function approach of Harrington (1965) using functional forms described by Derringer and Suich (1980).
 
 \section{Basic Desirability Functions}
 
@@ -165,7 +174,7 @@ par(mfrow=c(1,1))
    \end{center}
 \end{figure}
 
-For each of these three desirability functions (and the others discussed in Section 6.3), there are \texttt{print}, \texttt{plot} and \texttt{predict} methods.
+For each of these three desirability functions (and the others discussed in Section 6.3), there are \code{print}, \code{plot} and \code{predict} methods.
 
 \section{Overall Desirability}
 
@@ -182,7 +191,7 @@ Once $D$ has been defined and the prediction equations for each of the $R$ equat
    
 Myers and Montgomery (1995) describe a response surface experiment where three factors (reaction time, reaction temperature and percent catalyst) were used to model two characteristics of the chemical reaction: percent conversion and thermal activity. They present two equations\footnote{In practice, we would just use the predict method for the linear model objects to get the prediction equation. Our results are slightly different from those given by Myers and Montgomery because they used prediction equations with full floating--point precision.} for the fitted quadratic response surface models:
  
-{\small  
+  
 <<responseEq>>=
 conversionPred <- function(x) 81.09 + 1.0284 * x[1] + 4.043 * x[2] + 6.2037 * x[3] - 
    1.8366 * x[1]^2 + 2.9382 * x[2]^2 - 5.1915 * x[3]^2 +
@@ -192,7 +201,7 @@ activityPred <- function(x) 59.85 + 3.583 * x[1] + 0.2546 * x[2] + 2.2298 * x[3]
    0.83479 * x[1]^2 + 0.07484 * x[2]^2 + 0.05716 * x[3]^2 -
    0.3875 * x[1] * x[2] - 0.375 * x[1] * x[3] + 0.3125 * x[2] * x[3]
 @   
-}
+
 
 
 
@@ -201,7 +210,9 @@ Both quadratic models are saddle surfaces and the stationary points are outside 
 
 
 <<setupData, echo = FALSE, results = hide>>=
-plotGrid <- expand.grid(time = seq(-1.7, 1.7, length = 20), temperature = seq(-1.7, 1.7, length = 4), catalyst = seq(-1.7, 1.7, length = 20))
+plotGrid <- expand.grid(time = seq(-1.7, 1.7, length = 50), 
+                        temperature = seq(-1.7, 1.7, length = 4), 
+                        catalyst = seq(-1.7, 1.7, length = 50))
 plotGrid$conversionPred <- apply(plotGrid[, 1:3], 1, conversionPred)
 plotGrid$activityPred <- apply(plotGrid[, 1:3], 1, activityPred)
 @
@@ -210,13 +221,10 @@ plotGrid$activityPred <- apply(plotGrid[, 1:3], 1, activityPred)
    \begin{center}		
 <<conversionPlot, echo = FALSE, fig = TRUE>>=
 library(lattice)
-library(RColorBrewer)
-print(
-#   wireframe(conversionPred ~ time + catalyst|temperature, plotGrid, drape = TRUE, colorkey = TRUE, 
-#      zlab = list(expression("conversion"), rot = 90), 
-#      zoom=0.8,    
-#      col.regions =   colorRampPalette(brewer.pal(9, "Blues"))(100), as.table = TRUE,  screen = list(z = -30, x = -70, y = 0)))
-contourplot(conversionPred ~ time + catalyst|temperature, plotGrid, aspect = 1))
+textInfo <- trellis.par.get("add.text")
+textInfo$cex <- .7
+trellis.par.set("add.text", textInfo)
+print(contourplot(conversionPred ~ time + catalyst|temperature, plotGrid, aspect = 1, as.table = TRUE))
 @
       \caption{The response surface for the percent conversion model. To plot the model contours, the temperature variable was fixed at four diverse levels. The largest effects in the fitted model are due to the time$\times$catalyst interaction and the linear and quadratic effects of catalyst.}
       \label{f:conversionPlot}         
@@ -230,22 +238,16 @@ Translating the experimental goals to desirability functions, a larger--is--bett
    \begin{center}	
   	
 <<activityPlot, echo = FALSE, fig = TRUE>>=
-
-print(
-#   wireframe(activityPred ~ time + catalyst|temperature, plotGrid, drape = TRUE, colorkey = TRUE, 
-#      zlab = list(expression("activity"), rot = 90), 
-#      zoom=0.8,   
-#      col.regions =   colorRampPalette(brewer.pal(9, "Blues"))(100), as.table = TRUE,  screen = list(z = -30, x = -70, y = 0)))
-contourplot(activityPred ~ time + catalyst|temperature, plotGrid, aspect = 1))
+print(contourplot(activityPred ~ time + catalyst|temperature, plotGrid, aspect = 1, as.table = TRUE))
 @
       \caption{The response surface for the thermal activity model. To plot the model contours, the temperature variable was fixed at four diverse levels. The main effects of time and catalyst have the largest effect on the fitted model.}
       \label{f:activityPred}         
    \end{center}
 \end{figure}
 
-To construct the overall desirability functions, objects must be created for the individual functions. For example, the following code chunk creates the appropriate objects and uses the \texttt{predict} method to estimate desirability at the center point of the design:
+To construct the overall desirability functions, objects must be created for the individual functions. For example, the following code chunk creates the appropriate objects and uses the \code{predict} method to estimate desirability at the center point of the design:
 
-{\small
+
 <<makeDesire>>=
 conversionD <- dMax(80, 97)
 activityD <- dTarget(55, 57.5, 60)
@@ -254,36 +256,30 @@ print(predOutcomes)
 predict(conversionD, predOutcomes[1])
 predict(activityD, predOutcomes[2])
 @
-}
 
-To get the overall score for these settings of the experimental factors, the \texttt{dOverall} function is used to combine the objects and \texttt{predict} is used to get the final score:
 
-{\small
+To get the overall score for these settings of the experimental factors, the \code{dOverall} function is used to combine the objects and \code{predict} is used to get the final score:
+
+
 <<makeDesire>>=
 overallD <- dOverall(conversionD, activityD)
 print(overallD)
 predict(overallD, predOutcomes)
 @
-}
+
 
 
 <<setupDPlots, echo = FALSE, results = hide>>=
-dValues <- predict(overallD, plotGrid[, 4:5], TRUE)
-names(dValues) <- gsub("Pred", "Desire", names(dValues))
+dValues <- predict(overallD, plotGrid[, 4:5], all = TRUE)
 plotGrid <- cbind(plotGrid, dValues)
 @
 
 \begin{figure}[p]
    \begin{center}		
 <<conversionPlot2, echo = FALSE, fig = TRUE>>=
-print(
-#   wireframe(conversionDesire ~ time + catalyst|temperature, plotGrid, drape = TRUE, colorkey = TRUE, 
-#      zlab = list(expression("d(conversion)"), rot = 90), 
-#      zoom=0.8,
-#      col.regions =   colorRampPalette(brewer.pal(9, "Blues"))(100),  as.table = TRUE,  screen = list(z = -30, x = -70, y = 0)))
-contourplot(conversionDesire ~ time + catalyst|temperature, plotGrid, aspect = 1))
+print(contourplot(D1 ~ time + catalyst|temperature, plotGrid, aspect = 1, as.table = TRUE))
 @
-      \caption{The individual desirability surface for the percent conversion outcome using \texttt{dMax(80, 97)}}
+      \caption{The individual desirability surface for the percent conversion outcome using \code{dMax(80, 97)}}
       \label{f:conversionDesire}         
    \end{center}
 \end{figure}
@@ -292,14 +288,9 @@ contourplot(conversionDesire ~ time + catalyst|temperature, plotGrid, aspect = 1
 \begin{figure}[p]
    \begin{center}		
 <<activityPlot2, echo = FALSE, fig = TRUE>>=
-print(
-#   wireframe(activityDesire ~ time + catalyst|temperature, plotGrid, drape = TRUE, colorkey = TRUE, 
-#      zlab = list(expression("d(activity)"), rot = 90), 
-#      zoom=0.8,
-#      col.regions =   colorRampPalette(brewer.pal(9, "Blues"))(100),  as.table = TRUE,  screen = list(z = -30, x = -70, y = 0)))
-contourplot(activityDesire ~ time + catalyst|temperature, plotGrid, aspect = 1))
+print(contourplot(D2 ~ time + catalyst|temperature, plotGrid, aspect = 1, as.table = TRUE))
 @
-      \caption{The individual desirability surface for the thermal activity outcome using \texttt{dTarget(55, 57.5, 60)}}
+      \caption{The individual desirability surface for the thermal activity outcome using \code{dTarget(55, 57.5, 60)}}
       \label{f:activityDesire}         
    \end{center}
 \end{figure}
@@ -308,12 +299,7 @@ contourplot(activityDesire ~ time + catalyst|temperature, plotGrid, aspect = 1))
 \begin{figure}[p]
    \begin{center}		
 <<overallPlot, echo = FALSE, fig = TRUE>>=
-print(
-#   wireframe(Overall ~ time + catalyst|temperature, plotGrid, drape = TRUE, colorkey = TRUE, 
-#      zlab = list(expression("Desirability"), rot = 90), 
-#      zoom=0.8,   
-#      col.regions =   colorRampPalette(brewer.pal(9, "Blues"))(100),  as.table = TRUE,  screen = list(z = -30, x = -70, y = 0)))
-contourplot(Overall ~ time + catalyst|temperature, plotGrid, spect = 1))
+print(contourplot(Overall ~ time + catalyst|temperature, plotGrid, aspect = 1, as.table = TRUE))
 @
       \caption{The overall desirability surface that combines the model for percent conversion and thermal activity}
       \label{f:Overall}         
@@ -323,81 +309,76 @@ contourplot(Overall ~ time + catalyst|temperature, plotGrid, spect = 1))
 \clearpage
 \section{Maximizing Desirability}
 
-Following Myers and Montgomery, we can maximize desirability within a cuboidal region bounded by the value of the axial points. To do this, the objective function (\texttt{rsmOpt}) uses a penalty approach; if a candidate point falls outside of the cuboidal design region, the desirability is set to zero. 
+Following Myers and Montgomery, we can maximize desirability within a cuboidal region bounded by the value of the axial points. To do this, the objective function (\code{rsmOpt}) uses a penalty approach; if a candidate point falls outside of the cuboidal design region, the desirability is set to zero. 
 
-{\small
 <<optFunction>>=
 rsmOpt <- function(x, dObject, space = "square")
 {
-   conv <- conversionPred(x)
-   acty <- activityPred(x)
+  conv <- conversionPred(x)
+  acty <- activityPred(x)
 
-   out <- do.call(
-      predict, 
-      list(object = dObject, newdata = c(conv, acty)))
-   if(space == "circular")
-   {
+  out <- predict(dObject, data.frame(conv = conv, acty = acty))
+
+  if(space == "circular")
+    {
       if(sqrt(sum(x^2)) > 1.682) out <- 0
-   } else if(space == "square") if(any(abs(x) > 1.682)) out <- 0
-   out
+    } else if(space == "square") if(any(abs(x) > 1.682)) out <- 0
+  out
 }
 @
-}
 
-The Nelder--Mean simplex method (Nelder and Mead (1965), Olsson and Nelson (1975)) can be used to maximize desirability using the \texttt{optim} function. This is a direct search method that uses only function calls and does not use gradient information. This optimization technique can handle discontinuous or non--smooth functions that are commonly produced by desirability functions. However, this method has the propensity to converge to a local optimum. Since the technique is fast when we have an efficient function to optimize, we can restart the algorithm in multiple locations in the feasible space and use the best outcome. As an alternative, other direct search methods are more likely to yield a global optimum, such as simulated annealing (Bohachevsky {\it et al}, 1986). This particular routine is also available in \texttt{optim}, but tuning the annealing parameters may be needed to ensure that the technique is performing well.
+
+The Nelder--Mean simplex method (Nelder and Mead (1965), Olsson and Nelson (1975)) can be used to maximize desirability using the \code{optim} function. This is a direct search method that uses only function calls and does not use gradient information. This optimization technique can handle discontinuous or non--smooth functions that are commonly produced by desirability functions. However, this method has the propensity to converge to a local optimum. Since the technique is fast when we have an efficient function to optimize, we can restart the algorithm in multiple locations in the feasible space and use the best outcome. As an alternative, other direct search methods are more likely to yield a global optimum, such as simulated annealing (Bohachevsky {\it et al}, 1986). This particular routine is also available in \code{optim}, but tuning the annealing parameters may be needed to ensure that the technique is performing well.
 
 The following code chunk uses the Nelder--Mean simplex method and a cubiodal design region:
 
-{\small
+
 <<squareRegion>>=
-searchGrid <- expand.grid(
-   time = seq(-1.5, 1.5, length = 5),
-   temperature = seq(-1.5, 1.5, length = 5),
-   catalyst = seq(-1.5, 1.5, length = 5))
+searchGrid <- expand.grid(time = seq(-1.5, 1.5, length = 5),
+                          temperature = seq(-1.5, 1.5, length = 5),
+                          catalyst = seq(-1.5, 1.5, length = 5))
 
 for(i in 1:dim(searchGrid)[1])
 {
-   tmp <- optim(
-      as.vector(searchGrid[i,]), 
-      rsmOpt, 
-      dObject = overallD,
-      space = "square",
-      control = list(fnscale = -1))
-   if(i == 1)
-   {
+  tmp <- optim(as.vector(searchGrid[i,]), 
+               rsmOpt, 
+               dObject = overallD,
+               space = "square",
+               control = list(fnscale = -1))
+  if(i == 1)
+    {
       best <- tmp
-   } else {
+    } else {
       if(tmp$value > best$value) best <- tmp   
-   }
+    }
 }
 print(best) 
 @
-}
+
 
 From this optimization, the predicted value of conversion was \Sexpr{round(conversionPred(best$par), 2)} and activity was predicted to be \Sexpr{round(activityPred(best$par), 2)}. 
 
 Alternatively we can try to maximize desirability such that the experimental factors are constrained to be within a spherical design region with a radius equal to the axial point distance:
 
-{\small
+
 <<circularRegion>>=
 for(i in 1:dim(searchGrid)[1])
 {
-   tmp <- optim(
-      as.vector(searchGrid[i,]), 
-      rsmOpt, 
-      space = "circular",      
-      dObject = overallD,      
-      control = list(fnscale = -1))
-   if(i == 1)
-   {
+  tmp <- optim(as.vector(searchGrid[i,]), 
+               rsmOpt, 
+               space = "circular",      
+               dObject = overallD,      
+               control = list(fnscale = -1))
+  if(i == 1)
+    {
       best <- tmp
-   } else {
+    } else {
       if(tmp$value > best$value) best <- tmp   
-   }
+    }
 }
 print(best) 
 @
-}
+
 
 The process converges to relative sub--optimum values (conversion = \Sexpr{round(conversionPred(best$par), 2)} and activity = \Sexpr{round(activityPred(best$par), 2)}). Using a radius of 2 produces overall desirability equal to one, although the solution extrapolates slightly outside of the design region.
 
@@ -408,15 +389,15 @@ The preceding approach has been faithful to the process described in Derringer a
 
 \subsection{Non--Informative Desirability and Missing Values}
 
-In some cases, the inputs to the desirability functions cannot be computed. When individual desirability functions are defined, a non--informative value is estimated by computing the desirabilities over the possible range and taking the mean value. By default, if the input to this desirability function is \texttt{NA}, it is replaced by the non--informative value. In order to have the calculation return an \texttt{NA} value, the value of \texttt{object\$missing} can be changed to \texttt{NA}, where \texttt{object} is the result of a call to one of the desirability R functions. The non--informative value is plotted as a broken line in the default \texttt{plot} methods (see Figure \ref{f:logistic} for an example). 
+In some cases, the inputs to the desirability functions cannot be computed. When individual desirability functions are defined, a non--informative value is estimated by computing the desirabilities over the possible range and taking the mean value. By default, if the input to this desirability function is \code{NA}, it is replaced by the non--informative value. In order to have the calculation return an \code{NA} value, the value of \code{object\$missing} can be changed to \code{NA}, where \code{object} is the result of a call to one of the desirability R functions. The non--informative value is plotted as a broken line in the default \code{plot} methods (see Figure \ref{f:logistic} for an example). 
 
 \subsection{Zero--Desirability Tolerances}
 
-In some cases where the dimensionality of the outcomes is large, it may be difficult to find feasible solutions where every individual desirability value is acceptable. Each desirability R function has a \texttt{tol} argument that can be set to a number on [0, 1] (the default value is \texttt{NULL}). If this value is not null, desirability values equal to zero are replaced by the value of \texttt{tol}. This computation is applied after the missing value imputation step.
+In some cases where the dimensionality of the outcomes is large, it may be difficult to find feasible solutions where every individual desirability value is acceptable. Each desirability R function has a \code{tol} argument that can be set to a number on [0, 1] (the default value is \code{NULL}). If this value is not null, desirability values equal to zero are replaced by the value of \code{tol}. This computation is applied after the missing value imputation step.
 
 \subsection{Non--Standard Desirability Functions}
 
-In some cases, the three R desirability functions previously discussed may not cover all of the possible forms of the desirability function required by the user. The function \texttt{dArb} takes as input a numeric vector of input values and their matching desirabilities and can approximate many other functional forms. 
+In some cases, the three R desirability functions previously discussed may not cover all of the possible forms of the desirability function required by the user. The function \code{dArb} takes as input a numeric vector of input values and their matching desirabilities and can approximate many other functional forms. 
 
 For example, if a symmetric, sinusoidal curve was needed to translate a real--valued equation to the desirability scale, the logistic function could be used:
 \[
@@ -431,7 +412,7 @@ logisticD <- dArb(xInput, foo(xInput))
 @
 Inputs in--between the grid points are linearly interpolated.
 
-Using this approach, the extreme values are used outside of the input range. For example, an input value of --10 would be assigned to desirability value of \texttt{foo(-5)}. Similarly, on the high side, the last desirability value (when the inputs are ordered) is carried forward. Figure \ref{f:logistic} shows an example of the \texttt{plot} method applied to the object \texttt{logisticD}.
+Using this approach, the extreme values are used outside of the input range. For example, an input value of --10 would be assigned to desirability value of \code{foo(-5)}. Similarly, on the high side, the last desirability value (when the inputs are ordered) is carried forward. Figure \ref{f:logistic} shows an example of the \code{plot} method applied to the object \code{logisticD}.
 
 \begin{figure}[ht]
    \begin{center}	
@@ -441,7 +422,7 @@ pdf("logistic.pdf", width = 5, height = 4)
 dev.off()
 @
       \includegraphics[clip, width = .6\textwidth]{logistic}  
-      \caption{An example of using a logistic function to translate inputs to desirability using the \texttt{dArb} function.}
+      \caption{An example of using a logistic function to translate inputs to desirability using the \code{dArb} function.}
       \label{f:logistic}   
 \end{center}	
 \end{figure}
@@ -449,6 +430,15 @@ dev.off()
 
 Similarly, there is another desirability function to implement box constraints on an equation. For example, instead of using a penalty approach to constraining the experimental factors to be within the design region, we could coerce values outside of $\pm$1.682 to have zero desirability. Figure \ref{f:box} shows an example function. In our previous optimization example, we could create a desirability function for each of the predictors and add them to the overall desirability object.
 
+Another non--standard application of desirability functions uses
+categorical inputs. Desirabilities can be assigned for all possible
+values. For example:
+<<cats>>=
+values <- c("value1" = .1, "value2" = .9, "value3" = .2)
+groupedDesirabilities <- dCategorical(values)
+groupedDesirabilities
+@ 
+Figure \ref{f:cat} shows a plot of the desirability profiles for this configuration.
 
 \begin{figure}[ht]
    \begin{center}	
@@ -460,6 +450,20 @@ dev.off()
       \includegraphics[clip, width = .6\textwidth]{box}  
       \caption{An example of using a box--like desirability function.}
       \label{f:box}   
+\end{center}	
+\end{figure}
+
+\begin{figure}
+   \begin{center}	
+<<groups, echo = FALSE, results = hide>>=
+pdf("groups.pdf", width = 5, height = 4)
+plot(groupedDesirabilities, nonInform = FALSE)
+dev.off()
+@
+      \includegraphics[clip, width = .6\textwidth]{groups}  
+      \caption{An example of using a desirability function for
+        categorical values.}
+      \label{f:cat}   
 \end{center}	
 \end{figure}
 
@@ -481,7 +485,7 @@ Modified Desirability Functions for Multiple Response Optimization.
 \item [] Derringer, G. and Suich, R. (1980),
 Simultaneous Optimization of Several Response Variables.
 {\em Journal of Quality Technology} {\bf 12}, 214--219.
-\item [] Harington, J. (1965), The Desirablity Function. {\em Industrial Quality Control} {\bf 21}, 494--498.
+\item [] Harington, J. (1965), The Desirability Function. {\em Industrial Quality Control} {\bf 21}, 494--498.
 
 \item [] Myers, R. H. and Montgomery, C. M. (1995), 
 {\em Response Surfaces Methodology: Process and Product Optimization 
@@ -497,13 +501,3 @@ Using Designed Experiments}. New York: Wiley.
 
 \end{document}
 
-
-   setwd("C:/Program Files/R/R231/bin/desirability/inst/doc")
-   oldWidth <- options("width")$width
-   options(width = 80)
-   Sweave(
-      file = "C:/Program Files/R/R231/bin/desirability/inst/doc/desirability.Rnw",
-      out = "C:/Program Files/R/R231/bin/desirability/inst/doc/desirability.tex")
-   options(width = oldWidth)
-   
-   

@@ -54,6 +54,19 @@ print.dArb <- function(x, digits = max(3, getOption("digits") - 3), printCall = 
    invisible(x)
 }
 
+
+print.dCategorical <- function(x, digits = max(3, getOption("digits") - 3), printCall = TRUE, ...)
+{
+   cat("Desirability function for categorical data\n")
+   cat("\nCall: ", deparse(x$call), "\n\n", sep = "")
+   
+   cat("Non-informative value:", round(x$missing, digits), "\n")
+   if(!is.null(x$tol)) cat("tolerance:", round(x$tol, digits), "\n")
+
+   invisible(x)
+}
+
+
 print.dOverall <- function(x, digits = max(3, getOption("digits") - 3), printCall = TRUE, ...)
 {
    cat("Combined desirability function\n")

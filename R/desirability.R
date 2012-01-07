@@ -4,7 +4,7 @@
 "dArb"    <- function(x, ...) UseMethod("dArb")
 "dBox"    <- function(low, ...) UseMethod("dBox")
 "dOverall"    <- function(...) UseMethod("dOverall")
-
+"dCategorical"    <- function(...) UseMethod("dCategorical")
 
 
 dMax.default <- function(low, high, scale = 1, tol = NULL, ...)
@@ -89,9 +89,21 @@ dOverall.default <- function(...)
 {
    dObjs <- list(...)
    dClasses <- unlist(lapply(dObjs, class))
-   if(!all(dClasses %in% c("dMax", "dMin", "dTarget", "dArb", "dBox")))
-      stop("some classes do not have classes in dMax, dMin, dTarget, dArb or dBox")
+   if(!all(dClasses %in% c("dMax", "dMin", "dTarget", "dArb", "dBox", "dCategorical")))
+      stop("some classes do not have classes in dMax, dMin, dTarget, dArb, dCategorical or dBox")
    structure(
       list(d = dObjs, call = match.call(expand.dots = TRUE)),
       class = "dOverall")   
+}
+
+dCategorical.default <- function (values, tol = NULL, ...) 
+{
+    if(length(values) < 2) stop("'values' should have at least two values")
+    vals <- names(values)
+    if(any(vals == "") | is.null(vals)) stop("'values' should be a named vector")
+    if(!is.vector(values)) stop("'values' should be a named vector")
+    tmp <- list(values = values, tol = tol, missing = NA, ...)
+    nonInformValue <- mean(predict.dCategorical(tmp, names(values)))
+    structure(list(values = values, tol = tol, missing = nonInformValue, 
+        tol = tol, call = match.call(expand.dots = TRUE)), class = "dCategorical")
 }

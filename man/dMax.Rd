@@ -4,6 +4,7 @@
 \alias{dTarget}
 \alias{dArb}
 \alias{dBox}
+\alias{dCategorical}
 \alias{dOverall}
 
 \alias{dMax.default}
@@ -11,9 +12,10 @@
 \alias{dTarget.default}
 \alias{dArb.default}
 \alias{dBox.default}
+\alias{dCategorical.default}
 \alias{dOverall.default}
 
-\title{Desirability functions}
+\title{Desirability Functions}
 \description{
 Functions implementing multivariate optimization and ranking using the desirability function approach described in Derringer and Suich (1980)
 }
@@ -23,6 +25,7 @@ Functions implementing multivariate optimization and ranking using the desirabil
 \method{dTarget}{default}(low, target, high, lowScale = 1, highScale = 1, tol = NULL, ...) 
 \method{dArb}{default}(x, d, tol = NULL, ...)
 \method{dBox}{default}(low, high, tol = NULL, ...)
+\method{dCategorical}{default}(values, tol = NULL, ...)
 \method{dOverall}{default}(...)
 
 }
@@ -35,6 +38,7 @@ Functions implementing multivariate optimization and ranking using the desirabil
   \item{highScale}{ the scaling factor for \code{dTarget}. This bends the curve between the points \code{high} and \code{target}. Values less than one make the criteria more difficult to satisfy while values greater than one make it easier.}  
   \item{x}{a set of input values}
   \item{d}{a set of desirabilites between zero and one (inclusive) that match the length of \code{x}}    
+  \item{values}{a named numeric vector of possible values}
   \item{tol}{an optional tolerance for zero desirability. When this is non-null, zero desirabilites are replaced with this value}
   \item{\ldots}{For \code{dOverall}, this is one or more desirability objects. For the other methods, this argument is not currently used}
 }

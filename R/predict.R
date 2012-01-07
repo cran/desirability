@@ -1,14 +1,14 @@
-predict.dBox <- function(object, newdata = NA, ...)
+predict.dBox <- function(object, newdata = NA, missing = object$missing, ...)
 {
    out <- vector(length = length(newdata), mode = "numeric") * NA 
    out[newdata < object$low | newdata > object$high] <- 0
    out[newdata >= object$low & newdata <= object$high] <- 1
-   out[is.na(out)] <- object$missing
+   out[is.na(out)] <- missing
    if(!is.null(object$tol)) out[out == 0] <- object$tol
    out
 }
 
-predict.dMax <- function(object, newdata = NA, ...)
+predict.dMax <- function(object, newdata = NA, missing = object$missing, ...)
 {
    out <- vector(length = length(newdata), mode = "numeric") * NA 
    out[newdata < object$low] <- 0
@@ -16,11 +16,11 @@ predict.dMax <- function(object, newdata = NA, ...)
    out[newdata <= object$high & newdata >= object$low] <- (
       (newdata[newdata <= object$high & newdata >= object$low] - object$low)/
       (object$high - object$low))^object$scale 
-   out[is.na(out)] <- object$missing      
+   out[is.na(out)] <- missing      
    out
 }
 
-predict.dMin <- function(object, newdata = NA, ...)
+predict.dMin <- function(object, newdata = NA, missing = object$missing, ...)
 {
    out <- vector(length = length(newdata), mode = "numeric") * NA
    out[newdata < object$low] <- 1
@@ -28,12 +28,12 @@ predict.dMin <- function(object, newdata = NA, ...)
    out[newdata <= object$high & newdata >= object$low] <- (
       (newdata[newdata <= object$high & newdata >= object$low] - object$high)/
       (object$low - object$high))^object$scale 
-   out[is.na(out)] <- object$missing      
+   out[is.na(out)] <- missing    
    out
 }
 
 
-predict.dTarget <- function(object, newdata = NA, ...)
+predict.dTarget <- function(object, newdata = NA, missing = object$missing, ...)
 {
    out <- vector(length = length(newdata), mode = "numeric")  * NA
    out[newdata < object$low | newdata > object$high] <- 0
@@ -43,12 +43,12 @@ predict.dTarget <- function(object, newdata = NA, ...)
    out[newdata <= object$high & newdata >= object$target] <- (
       (newdata[newdata <= object$high & newdata >= object$target] - object$high)/
       (object$target - object$high))^object$highScale       
-   out[is.na(out)] <- object$missing
+   out[is.na(out)] <- missing
       
    out
 }
 
-predict.dArb <- function(object, newdata = NA, ...)
+predict.dArb <- function(object, newdata = NA, missing = object$missing, ...)
 {
    out <- vector(length = length(newdata), mode = "numeric")  * NA
    out[newdata < min(object$x)] <- object$d[1]
@@ -68,30 +68,44 @@ predict.dArb <- function(object, newdata = NA, ...)
       out[inBtwn] <- approxD
       
    }
-   out[is.na(out)] <- object$missing
+   out[is.na(out)] <- missing
    
    out
 }
 
-predict.dOverall <- function(object, newdata = matrix(NA, ncol = length(object$d)), all = FALSE, ...)
+predict.dOverall <- function(object, newdata = data.frame(NA, ncol = length(object$d)), all = FALSE, ...)
 {
    numD <- length(object$d)
-   if(is.vector(newdata)) newdata <- matrix(newdata, ncol = length(newdata))
-   if(is.matrix(newdata)) newdata <- as.matrix(newdata)
+   if(is.vector(newdata)) newdata <- data.frame(newdata, ncol = length(newdata))
+   if(is.matrix(newdata)) newdata <- as.data.frame(newdata)
    if(numD != ncol(newdata)) stop("the number of columns in newdata must match the number of desirability functions")
    
-   indD <- newdata * NA
+   out <- matrix(NA, nrow = nrow(newdata), ncol = ncol(newdata) + as.integer(all))
    for(i in 1:numD)
    {
-      indD[,i] <- predict(object$d[[i]], newdata[,i])
+      out[,i] <- predict(object$d[[i]], newdata[,i])
    }
-   overall <- apply(indD, 1, prod)^(1/numD)
+   
    if(all)
    {
-      out <- cbind(indD, overall)
-      colnames(out)[numD + 1] <- "Overall"
+     out[,numD+1] <- apply(out[,-(numD+1), drop= FALSE], 1, prod)^(1/numD)
+     colnames(out)[numD + 1] <- "Overall"
+     colnames(out)[-(numD+1)] <- paste("D", 1:numD, sep = "")     
+     rownames(out) <- rownames(newdata)
+   } else out <- apply(out, 1, prod)^(1/numD)
    
-   } else out <- overall
-   
+   out
+}
+
+
+predict.dCategorical <- function(object, newdata = NA, missing = object$missing, ...)
+{
+   nms <- names(object$values)
+   out <- vector(length = length(newdata), mode = "numeric")  * NA
+   if(!all(unique(newdata[!is.na(newdata)]) %in% names(object$values)))
+     stop(paste("values should be in:", paste(nms, collapse = ", ")))
+   for(i in seq(along = nms)) if(any(newdata == nms[i])) out[newdata == nms[i]] <- object$values[i]
+   out[is.na(out)] <- missing
+      
    out
 }

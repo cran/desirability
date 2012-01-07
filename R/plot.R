@@ -58,6 +58,15 @@ plot.dTarget <- function(x, add = FALSE, nonInform = TRUE, ...)
 }
 
 
+plot.dCategorical <- function(x, nonInform = TRUE, ...)
+{
+   barplot(x$values, ylab = "Desirability", ...)
+   if(nonInform) abline(h = x$missing, lty = 2,)
+   invisible(x)   
+}
+
+
+
 plot.dArb <- function(x, add = FALSE, nonInform = TRUE, ...)
 {
    xRange <- extendrange(x$x)

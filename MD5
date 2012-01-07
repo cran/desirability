@@ -1,0 +1,11 @@
+d840521b96434ced5ad92ba6316d01f4 *DESCRIPTION
+c3763f2dbe5f5a91e15ff13b5b06a8f4 *NAMESPACE
+9e7884a8fa0f069a79e025f57cc88e07 *R/desirability.R
+78b6baa0f777776e638db3fbb6c3f72e *R/plot.R
+486609b7c8a4d0ed543a524d21363678 *R/predict.R
+c8ba187d6e07077ce47159fd67da0331 *R/print.R
+217a4330e8ca7637f997063032179e1b *inst/NEWS
+af039f5016f3921d87454dda9c86e3be *inst/doc/desirability.Rnw
+899de9560476623883e6a7e1ba19975c *inst/doc/desirability.pdf
+305fa93f017cd6e026dc98a1274d39fc *man/dMax.Rd
+44ff0463bc8096be9ec8e602bb79cce7 *man/predict.dMax.Rd
